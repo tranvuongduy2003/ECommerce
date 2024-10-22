@@ -26,7 +26,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.API", "src\Service
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "src\BuildingBlocks\Shared\Shared.csproj", "{4839D45F-12D0-4598-BDFD-D94807EE9B72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructures", "src\BuildingBlocks\Infrastructures\Infrastructures.csproj", "{FEB5C4B7-8F65-4EFD-A544-451E1B600C18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\BuildingBlocks\Infrastructure\Infrastructure.csproj", "{FEB5C4B7-8F65-4EFD-A544-451E1B600C18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus.Messages", "src\BuildingBlocks\EventBus.Messages\EventBus.Messages.csproj", "{C1A20709-A98C-46BC-A7E3-2254EC10D17E}"
 EndProject

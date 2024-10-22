@@ -1,5 +1,5 @@
 using AutoMapper;
-using Infrastructures.Mappings;
+using Infrastructure.Mappings;
 using Product.API.Entities;
 using Shared.DTOs.Product;
 
