@@ -1,4 +1,4 @@
-namespace Shared.Configrations;
+namespace Shared.Configurations;
 
 public class DatabaseSettings
 {
