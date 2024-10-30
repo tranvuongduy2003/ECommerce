@@ -1,44 +1,67 @@
+using Ocelot.Middleware;
+using OcelotApiGw.Extensions;
+using Serilog;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+Log.Information($"Start {builder.Environment.ApplicationName} up");
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    builder.Host.AddAppConfigurations();
+    // Add services to the container.
 
-app.UseHttpsRedirection();
+    builder.Services.AddControllers();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    builder.Services.ConfigureOcelot(builder.Configuration);
+    builder.Services.ConfigureCors(builder.Configuration);
 
-app.MapGet("/weatherforecast", () =>
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
-app.Run();
+    app.UseCors("CorsPolicy");
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+    //app.UseMiddleware<ErrorWrappingMiddleware>();
+
+    //app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.UseRouting();
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapGet("/", async context =>
+        {
+            await context.Response.WriteAsync($"Hello TEDU members! This is {builder.Environment.ApplicationName}");
+        });
+    });
+
+    app.MapControllers();
+    await app.UseOcelot(); // can move top?
+    app.Run();
+}
+catch (Exception ex)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    string type = ex.GetType().Name;
+    if (type.Equals("StopTheHostException", StringComparison.Ordinal)) throw;
+
+    Log.Fatal(ex, $"Unhandled exception: {ex.Message}");
+}
+finally
+{
+    Log.Information($"Shut down {builder.Environment.ApplicationName} complete");
+    Log.CloseAndFlush();
 }
