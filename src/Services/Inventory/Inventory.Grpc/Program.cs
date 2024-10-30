@@ -1,44 +1,45 @@
+using Common.Logging;
+using Inventory.Grpc.Extensions;
+using Inventory.Grpc.Services;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog(Serilogger.Configure);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+Log.Information($"Start {builder.Environment.ApplicationName} up");
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Add services to the container
+    builder.Services.AddConfigurationSettings(builder.Configuration);
+    builder.Services.ConfigureMongoDbClient();
+    builder.Services.AddInfrastructureServices();
+
+    // Additional configuration is required to successfully run gRPC on macOS.
+    // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
+
+    // Add services to the container.
+    builder.Services.AddGrpc();
+
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline.
+    app.MapGrpcService<InventoryService>();
+    app.MapGet("/",
+        () =>
+            "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
+catch (Exception ex)
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    string type = ex.GetType().Name;
+    if (type.Equals("StopTheHostException", StringComparison.Ordinal)) throw;
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+    Log.Fatal(ex, $"Unhandled exception: {ex.Message}");
+}
+finally
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    Log.Information($"Shut down {builder.Environment.ApplicationName} complete");
+    Log.CloseAndFlush();
 }

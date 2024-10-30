@@ -15,8 +15,5 @@ public class Cart
 
     public List<CartItem> Items { get; set; } = new();
 
-    public decimal TotalPrice
-    {
-        get { return Items.Sum(item => item.ItemPrice * item.Quantity); }
-    }
+    public decimal TotalPrice => Items.Sum(item => item.ItemPrice * item.Quantity);
 }
