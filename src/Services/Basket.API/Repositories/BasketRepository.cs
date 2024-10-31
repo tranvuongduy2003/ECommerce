@@ -1,5 +1,6 @@
 using Basket.API.Entities;
 using Basket.API.Repositories.Interfaces;
+using Basket.API.Services.Interfaces;
 using Contracts.Common.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
 using ILogger = Serilog.ILogger;
@@ -11,12 +12,15 @@ public class BasketRepository : IBasketRepository
     private readonly IDistributedCache _redisCacheService;
     private readonly ISerializerService _serializerService;
     private readonly ILogger _logger;
+    private readonly IBasketEmailService _basketEmailService;
 
-    public BasketRepository(IDistributedCache redisCacheService, ISerializerService serializerService, ILogger logger)
+    public BasketRepository(IDistributedCache redisCacheService, ISerializerService serializerService, ILogger logger,
+        IBasketEmailService basketEmailService)
     {
         _redisCacheService = redisCacheService;
         _serializerService = serializerService;
         _logger = logger;
+        _basketEmailService = basketEmailService;
     }
 
     public async Task<Cart?> GetBasketByUserNameAsync(string userName)
@@ -43,7 +47,22 @@ public class BasketRepository : IBasketRepository
         }
 
         _logger.Information($"END: UpdateBasket for {cart.UserName}");
+        try
+        {
+            TriggerSendEmailReminderCheckoutOrder(cart);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"UpdateBasket: {ex.Message}");
+        }
+
         return await GetBasketByUserNameAsync(cart.UserName);
+    }
+
+    private void TriggerSendEmailReminderCheckoutOrder(Cart cart)
+    {
+        var emailContent = _basketEmailService.GenerateReminderCheckoutOrderEmail(cart.UserName);
+        // Call hangfire api: send-reminder-email
     }
 
     public async Task<bool> DeleteBasketFromUserNameAsync(string userName)

@@ -12,11 +12,13 @@ try
 {
     builder.Host.UseSerilog(Serilogger.Configure);
 
+    builder.Host.AddAppConfigurations();
+
     builder.Services.AddInfrastructure(builder.Configuration);
 
     var app = builder.Build();
 
-    app.UseInfrastructure();
+    app.UseInfrastructure(builder.Configuration);
 
     app.MapCustomersAPI();
 
@@ -29,6 +31,7 @@ catch (Exception ex)
     {
         throw;
     }
+
     Log.Fatal(ex, "Application terminated unexpectedly");
 }
 finally

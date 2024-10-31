@@ -5,6 +5,7 @@ using Customer.API.Repositories.Interfaces;
 using Customer.API.Services;
 using Customer.API.Services.Interfaces;
 using Infrastructure.Common;
+using Infrastructure.ScheduleJobs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Customer.API.Extensions;
@@ -20,6 +21,7 @@ public static class ServiceExtensions
 
         services.ConfigureCustomerDbContext(configuration);
         services.AddInfrastructureService();
+        services.AddHangfireService();
     }
 
     private static void ConfigureCustomerDbContext(this IServiceCollection services, IConfiguration configuration)

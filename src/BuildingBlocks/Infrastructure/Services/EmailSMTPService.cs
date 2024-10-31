@@ -22,6 +22,52 @@ public class EmailSMTPService : IEmailSMTPService
 
     public async Task SendEmailAsync(MailRequest request, CancellationToken cancellationToken = default)
     {
+        var emailMessage = GetEmailMessage(request);
+
+        try
+        {
+            await _smtpClient.ConnectAsync(_emailSetting.SMTPServer, _emailSetting.Port,
+                _emailSetting.UseSsl, cancellationToken);
+            await _smtpClient.AuthenticateAsync(_emailSetting.Username, _emailSetting.Password, cancellationToken);
+            await _smtpClient.SendAsync(emailMessage, cancellationToken);
+            await _smtpClient.DisconnectAsync(true, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+        }
+        finally
+        {
+            await _smtpClient.DisconnectAsync(true, cancellationToken);
+            _smtpClient.Dispose();
+        }
+    }
+
+    public void SendEmail(MailRequest request)
+    {
+        var emailMessage = GetEmailMessage(request);
+
+        try
+        {
+            _smtpClient.Connect(_emailSetting.SMTPServer, _emailSetting.Port,
+                _emailSetting.UseSsl);
+            _smtpClient.Authenticate(_emailSetting.Username, _emailSetting.Password);
+            _smtpClient.Send(emailMessage);
+            _smtpClient.Disconnect(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+        }
+        finally
+        {
+            _smtpClient.Disconnect(true);
+            _smtpClient.Dispose();
+        }
+    }
+
+    private MimeMessage GetEmailMessage(MailRequest request)
+    {
         var emailMessage = new MimeMessage
         {
             Sender = new MailboxAddress(_emailSetting.DisplayName, request.From ?? _emailSetting.From),
@@ -43,22 +89,7 @@ public class EmailSMTPService : IEmailSMTPService
         {
             emailMessage.To.Add(MailboxAddress.Parse(request.ToAddress));
         }
-        try
-        {
-            await _smtpClient.ConnectAsync(_emailSetting.SMTPServer, _emailSetting.Port,
-                _emailSetting.UseSsl, cancellationToken);
-            await _smtpClient.AuthenticateAsync(_emailSetting.Username, _emailSetting.Password, cancellationToken);
-            await _smtpClient.SendAsync(emailMessage, cancellationToken);
-            await _smtpClient.DisconnectAsync(true, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.Error(ex.Message, ex);
-        }
-        finally
-        {
-            await _smtpClient.DisconnectAsync(true, cancellationToken);
-            _smtpClient.Dispose();
-        }
+
+        return emailMessage;
     }
 }
