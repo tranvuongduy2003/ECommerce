@@ -14,7 +14,7 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
         <PackageReference Include="Ocelot.Cache.CacheManager" Version="23.3.6" />
         <PackageReference Include="Ocelot.Provider.Polly" Version="23.3.6" />
-        <PackageReference Include="MMLib.SwaggerForOcelot" Version="8.3.2" />
+        <PackageReference Include="MMLib.SwaggerForOcelot" Version="5.2.0" />
     </ItemGroup>
 
     <ItemGroup>

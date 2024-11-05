@@ -46,20 +46,23 @@ try
 
     app.UseEndpoints(endpoints =>
     {
-        endpoints.MapGet("/",
-            async context =>
-            {
-                await context.Response.WriteAsync(
-                    $"Hello TEDU members! This is {builder.Environment.ApplicationName}");
-            });
+        endpoints.MapGet("/", context =>
+        {
+            context.Response.Redirect("swagger/index.html");
+            return Task.CompletedTask;
+        });
     });
 
     app.MapControllers();
     app.UseSwaggerForOcelotUI(opt =>
     {
         opt.PathToSwaggerGenerator = "/swagger/docs";
+        opt.OAuthClientId("tedu_microservices_swagger");
+        opt.DisplayRequestDuration();
     });
-    await app.UseOcelot(); // can move top?
+
+    await app.UseOcelot();
+
     app.Run();
 }
 catch (Exception ex)
