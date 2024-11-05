@@ -58,4 +58,28 @@ public class InventoryController : ControllerBase
         await _inventoryService.DeleteAsync(id);
         return NoContent();
     }
+
+    [HttpPost("sales/{itemNo}", Name = "SalesItem")]
+    public async Task<ActionResult<InventoryEntryDto>> SalesItem(string itemNo, SalesProductDto model)
+    {
+        var result = await _inventoryService.SalesItemAsync(itemNo, model);
+        return Ok(result);
+    }
+    
+    [HttpPost("sales/order-no/{orderNo}", Name = "SalesOrder")]
+    public async Task<ActionResult<InventoryEntryDto>> SalesOrder(string orderNo, SalesOrderDto model)
+    {
+        model.OrderNo = orderNo;
+        var documentNo = await _inventoryService.SalesOrderAsync(model);
+        var result = new CreatedSalesOrderSuccessDto(documentNo);
+        return Ok(result);
+    }
+
+
+    [HttpDelete("document-no/{documentNo}", Name = "DeleteByDocumentNo")]
+    public async Task<IActionResult> DeleteByDocumentNo(string documentNo)
+    {
+        await _inventoryService.DeleteByDocumentNoAsync(documentNo);
+        return NoContent();
+    }
 }

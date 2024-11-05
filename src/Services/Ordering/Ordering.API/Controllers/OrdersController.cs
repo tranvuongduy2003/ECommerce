@@ -1,9 +1,11 @@
+using System.Net;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Ordering.Application.Common.Models;
 using Ordering.Application.Features.V1.Orders.Commands.CreateOrder;
 using Ordering.Application.Features.V1.Orders.Commands.DeleteOrder;
 using Ordering.Application.Features.V1.Orders.Commands.UpdateOrder;
+using Ordering.Application.Features.V1.Orders.Queries.GetOrderById;
 using Ordering.Application.Features.V1.Orders.Queries.GetOrders;
 using Shared.SeedWork.ApiResult;
 
@@ -23,6 +25,7 @@ public class OrdersController : ControllerBase
     private static class RouteNames
     {
         public const string GetOrders = nameof(GetOrders);
+        public const string GetOrder = nameof(GetOrder);
         public const string CreateOrder = nameof(CreateOrder);
         public const string UpdateOrder = nameof(UpdateOrder);
         public const string DeleteOrder = nameof(DeleteOrder);
@@ -37,6 +40,16 @@ public class OrdersController : ControllerBase
     }
 
     #region CRUD
+
+    [HttpGet("{id:long}", Name = RouteNames.GetOrder)]
+    [ProducesResponseType(typeof(OrderDto), (int)HttpStatusCode.OK)]
+    public async Task<ActionResult<ApiResult<OrderDto>>> GetOrder(long id)
+    {
+        var query = new GetOrderByIdQuery(id);
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
 
     [HttpPost(Name = RouteNames.CreateOrder)]
     public async Task<ActionResult<ApiResult<long>>> CreateOrder(CreateOrderCommand command)

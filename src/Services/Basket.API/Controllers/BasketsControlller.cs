@@ -49,8 +49,8 @@ public class BasketsController : ControllerBase
 
         //a cached object will be expired if it not being requested for a defined amount of time period.
         var options = new DistributedCacheEntryOptions()
-            .SetAbsoluteExpiration(DateTime.UtcNow.AddMinutes(10))
-            .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+            //.SetAbsoluteExpiration(DateTime.UtcNow.AddMinutes(2))
+            .SetSlidingExpiration(TimeSpan.FromMinutes(60));
 
         var result = await _basketRepository.UpdateBasketAsync(cart, options);
         return Ok(result);
