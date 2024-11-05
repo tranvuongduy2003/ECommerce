@@ -12,6 +12,8 @@ using Product.API.Repositories;
 using Product.API.Repositories.Interfaces;
 using Shared.Configurations;
 using System.Text;
+using Infrastructure.Identity;
+using Microsoft.OpenApi.Models;
 
 namespace Product.API.Extensions
 {
@@ -23,11 +25,13 @@ namespace Product.API.Extensions
             services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+            services.ConfigureSwagger();
             services.ConfigureProductDbContext(configuration);
             services.AddInfrastructrueService();
             services.AddAutoMapper(cfg => cfg.AddProfile(new MappingProfile()));
-            services.AddJwtAuthentication();
+            //services.AddJwtAuthentication();
+            services.ConfigureAuthenticationHandler();
+            services.ConfigureAuthorization();
             services.ConfigureHealthChecks();
         }
 
@@ -90,6 +94,57 @@ namespace Product.API.Extensions
             services
                 .AddHealthChecks().AddMySql(databaseSettings.ConnectionString, null, null, "MySql Health",
                     HealthStatus.Degraded);
+        }
+
+        private static void ConfigureSwagger(this IServiceCollection services)
+        {
+            var configuration = services.GetOptions<ApiConfiguration>("ApiConfiguration");
+            if (configuration == null || string.IsNullOrEmpty(configuration.IssuerUri) ||
+                string.IsNullOrEmpty(configuration.ApiName)) throw new Exception("ApiConfiguration is not configured!");
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo
+                    {
+                        Title = "Product API V1",
+                        Version = configuration.ApiVersion
+                    });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Implicit = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri($"{configuration.IdentityServerBaseUrl}/connect/authorize"),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "tedu_microservices_api.read", "Tedu Microservices API Read Scope" },
+                                { "tedu_microservices_api.write", "Tedu Microservices API Write Scope" }
+                            }
+                        }
+                    }
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Name = "Bearer"
+                        },
+                        new List<string>
+                        {
+                            "tedu_microservices_api.read",
+                            "tedu_microservices_api.write"
+                        }
+                    }
+                });
+            });
         }
     }
 }

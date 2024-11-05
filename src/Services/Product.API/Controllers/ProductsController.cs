@@ -1,14 +1,17 @@
 using AutoMapper;
+using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Product.API.Entities;
 using Product.API.Repositories.Interfaces;
+using Shared.Common.Constants;
 using Shared.DTOs.Product;
 
 namespace Product.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize("Bearer")]
 public class ProductsController : ControllerBase
 {
     private readonly IProductRepository _productRepository;
@@ -23,6 +26,7 @@ public class ProductsController : ControllerBase
     #region CRUD
 
     [HttpGet]
+    [ClaimRequirement(FunctionCode.PRODUCT, CommandCode.VIEW)]
     public async Task<IActionResult> GetProductsAsync()
     {
         var products = await _productRepository.GetProductsAsync();
@@ -31,6 +35,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{id:long}")]
+    [ClaimRequirement(FunctionCode.PRODUCT, CommandCode.VIEW)]
     public async Task<IActionResult> GetProductAsync(long id)
     {
         var product = await _productRepository.GetProductAsync(id);
@@ -41,7 +46,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [ClaimRequirement(FunctionCode.PRODUCT, CommandCode.CREATE)]
     public async Task<IActionResult> CreateProductAsync(CreateProductDto productDto)
     {
         var productEntity = await _productRepository.GetProductByNoAsync(productDto.No);
@@ -55,7 +60,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id:long}")]
-    [Authorize]
+    [ClaimRequirement(FunctionCode.PRODUCT, CommandCode.UPDATE)]
     public async Task<IActionResult> UpdateProductAsync(long id, UpdateProductDto productDto)
     {
         var product = await _productRepository.GetProductAsync(id);
@@ -69,7 +74,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id:long}")]
-    [Authorize]
+    [ClaimRequirement(FunctionCode.PRODUCT, CommandCode.DELETE)]
     public async Task<IActionResult> DeleteProductAsync(long id)
     {
         var product = await _productRepository.GetProductAsync(id);
@@ -85,6 +90,7 @@ public class ProductsController : ControllerBase
     #region Additional Resources
 
     [HttpGet("get-product-by-no/{productNo}")]
+    [ClaimRequirement(FunctionCode.PRODUCT, CommandCode.VIEW)]
     public async Task<IActionResult> GetProductAsync(string productNo)
     {
         var product = await _productRepository.GetProductByNoAsync(productNo);
