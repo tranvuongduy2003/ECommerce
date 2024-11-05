@@ -8,26 +8,28 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
-        <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.2" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10"/>
+        <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\..\..\..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\..\..\..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\BuildingBlocks\Common.Logging\Common.Logging.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\EventBus\EventBus.MessageComponents\EventBus.MessageComponents.csproj" />
-      <ProjectReference Include="..\Ordering.Application\Ordering.Application.csproj" />
-      <ProjectReference Include="..\Ordering.Infrastructure\Ordering.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\..\BuildingBlocks\Common.Logging\Common.Logging.csproj"/>
+        <ProjectReference Include="..\..\..\BuildingBlocks\EventBus\EventBus.MessageComponents\EventBus.MessageComponents.csproj"/>
+        <ProjectReference Include="..\Ordering.Application\Ordering.Application.csproj"/>
+        <ProjectReference Include="..\Ordering.Infrastructure\Ordering.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -1,3 +1,6 @@
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+
 namespace Basket.API.Extensions;
 
 public static class ApplicationExtensions
@@ -16,6 +19,13 @@ public static class ApplicationExtensions
         app.MapGet("/", context => Task.Run(() =>
             context.Response.Redirect("/swagger/index.html")));
 
-        app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapHealthChecks("/hc", new HealthCheckOptions
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+        });
     }
 }

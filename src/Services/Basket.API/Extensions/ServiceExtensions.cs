@@ -11,6 +11,7 @@ using Infrastructure.Services;
 using Inventory.Grpc.Protos;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Shared.Configurations;
 
 namespace Basket.API.Extensions;
@@ -30,6 +31,7 @@ public static class ServiceExtensions
         services.AddInfrastructureService();
         services.ConfigureMassTransit();
         services.ConfigureGrpcService();
+        services.ConfigureHealthChecks();
     }
 
     private static void AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
@@ -88,5 +90,11 @@ public static class ServiceExtensions
         var settings = services.GetOptions<GrpcSettings>(nameof(GrpcSettings));
         services.AddGrpcClient<StockProtoService.StockProtoServiceClient>(x => x.Address = new Uri(settings.StockUrl));
         services.AddScoped<StockItemGrpcService>();
+    }
+    
+    private static void ConfigureHealthChecks(this IServiceCollection services)
+    {
+        var settings = services.GetOptions<CacheSettings>(nameof(CacheSettings));
+        services.AddHealthChecks().AddRedis(settings.ConnectionString, "Redis Health", HealthStatus.Degraded);
     }
 }

@@ -1,4 +1,6 @@
 using Common.Logging;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Ordering.API.Extensions;
 using Ordering.Application;
 using Ordering.Infrastructure;
@@ -14,7 +16,7 @@ try
 {
     // Add services to the container.
     builder.Host.AddAppConfigurations();
-    builder.Services.AddInfrastructureServices(builder.Configuration);
+    builder.Services.AddInfrastructureServices();
     builder.Services.AddApplicationServices();
     builder.Services.AddConfigurationSettings(builder.Configuration);
     builder.Services.ConfigureMassTransit();
@@ -23,6 +25,7 @@ try
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    builder.Services.ConfigureHealthChecks();
 
     var app = builder.Build();
 
@@ -43,12 +46,21 @@ try
 
     //app.UseHttpsRedirection();
 
+    app.UseRouting();
     app.UseAuthorization();
-    
+
     app.MapGet("/", context => Task.Run(() =>
         context.Response.Redirect("/swagger/index.html")));
 
-    app.MapDefaultControllerRoute();
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapHealthChecks("/hc", new HealthCheckOptions
+        {
+            Predicate = _ => true,
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
+        endpoints.MapDefaultControllerRoute();
+    });
 
     app.Run();
 }
